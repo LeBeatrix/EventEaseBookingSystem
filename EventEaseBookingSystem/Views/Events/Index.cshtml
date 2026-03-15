@@ -1,0 +1,66 @@
+﻿@model IEnumerable<EventEaseBookingSystem.Models.Event>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-success mb-3">Create New Event</a>
+</p>
+<table>
+    section and replace it with:
+
+    <div class="row">
+
+        @foreach (var item in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card venue-card h-100">
+
+                    <div class="card-body">
+
+                        <h5 class="card-title">@item.EventName</h5>
+
+                        <p class="card-text">
+                            <strong>Date:</strong> @item.EventDate.ToShortDateString() <br />
+                            <strong>Venue:</strong> @item.Venue?.VenueName
+                        </p>
+
+                        <p class="card-text">
+                            @item.Description
+                        </p>
+
+                    </div>
+
+                    <div class="card-footer bg-white border-0 text-center">
+                        <a asp-action="Details" asp-route-id="@item.EventId" class="btn btn-primary btn-sm">Details</a>
+                        <a asp-action="Edit" asp-route-id="@item.EventId" class="btn btn-warning btn-sm">Edit</a>
+                        <a asp-action="Delete" asp-route-id="@item.EventId" class="btn btn-danger btn-sm">Delete</a>
+                    </div>
+
+                </div>
+            </div>
+        }
+
+    </div>
+
+    <style>
+
+        .venue-card {
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            border-radius: 10px;
+        }
+
+            .venue-card:hover {
+                transform: translateY(-6px);
+                box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            }
+
+        .venue-img {
+            height: 220px;
+            object-fit: cover;
+        }
+
+    </style>
