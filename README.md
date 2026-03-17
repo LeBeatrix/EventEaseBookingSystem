@@ -79,3 +79,14 @@ https://eventeasebookingsystem10496124-f0awb4cmb5cnb0hp.southafricanorth-01.azur
 
 Lené Prinsloo  
 Advanced Diploma in Application Development Student
+
+## References
+
+- Microsoft Documentation – Entity Framework Core  
+  https://learn.microsoft.com/en-us/ef/core/
+
+- Microsoft Documentation – ASP.NET Core MVC  
+  https://learn.microsoft.com/en-us/aspnet/core/mvc/
+
+- Azure Documentation – App Service Deployment  
+  https://learn.microsoft.com/en-us/azure/app-service/
