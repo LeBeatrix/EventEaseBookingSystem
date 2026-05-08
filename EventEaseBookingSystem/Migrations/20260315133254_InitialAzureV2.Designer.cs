@@ -4,6 +4,7 @@ using EventEaseBookingSystem.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EventEaseBookingSystem.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260315133254_InitialAzureV2")]
+    partial class InitialAzureV2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,14 +39,24 @@ namespace EventEaseBookingSystem.Migrations
                     b.Property<int>("EventId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EventId1")
+                        .HasColumnType("int");
+
                     b.Property<int>("VenueId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("VenueId1")
                         .HasColumnType("int");
 
                     b.HasKey("BookingId");
 
                     b.HasIndex("EventId");
 
+                    b.HasIndex("EventId1");
+
                     b.HasIndex("VenueId");
+
+                    b.HasIndex("VenueId1");
 
                     b.ToTable("Bookings");
                 });
@@ -108,16 +121,24 @@ namespace EventEaseBookingSystem.Migrations
             modelBuilder.Entity("EventEaseBookingSystem.Models.Booking", b =>
                 {
                     b.HasOne("EventEaseBookingSystem.Models.Event", "Event")
-                        .WithMany("Bookings")
+                        .WithMany()
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("EventEaseBookingSystem.Models.Venue", "Venue")
+                    b.HasOne("EventEaseBookingSystem.Models.Event", null)
                         .WithMany("Bookings")
+                        .HasForeignKey("EventId1");
+
+                    b.HasOne("EventEaseBookingSystem.Models.Venue", "Venue")
+                        .WithMany()
                         .HasForeignKey("VenueId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("EventEaseBookingSystem.Models.Venue", null)
+                        .WithMany("Bookings")
+                        .HasForeignKey("VenueId1");
 
                     b.Navigation("Event");
 

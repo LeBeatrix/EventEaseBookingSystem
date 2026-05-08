@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using EventEaseBookingSystem.Data;
+using EventEaseBookingSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,7 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 //Add DBContext
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sqlOptions => sqlOptions.EnableRetryOnFailure()));
+
+//Add BlobService
+builder.Services.AddScoped<BlobService>();
 
 var app = builder.Build();
 

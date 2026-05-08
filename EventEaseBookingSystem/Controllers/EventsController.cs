@@ -20,10 +20,20 @@ namespace EventEaseBookingSystem.Controllers
         }
 
         // GET: Events
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            var applicationDbContext = _context.Events.Include(e => e.Venue);
-            return View(await applicationDbContext.ToListAsync());
+            var events = _context.Events
+                .Include(e => e.Venue)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                events = events.Where(e =>
+                    e.EventName.Contains(searchString) ||
+                    e.Venue.VenueName.Contains(searchString));
+            }
+
+            return View(await events.ToListAsync());
         }
 
         // GET: Events/Details/5
@@ -66,6 +76,8 @@ namespace EventEaseBookingSystem.Controllers
                 return RedirectToAction(nameof(Index));
             }
             ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName", @event.VenueId);
+
+            // If validation fails, return user to form
             return View(@event);
         }
 
@@ -147,12 +159,25 @@ namespace EventEaseBookingSystem.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var @event = await _context.Events.FindAsync(id);
+
+            // CHECK IF EVENT HAS BOOKINGS
+            bool hasBookings = await _context.Bookings
+                .AnyAsync(b => b.EventId == id);
+
+            if (hasBookings)
+            {
+                TempData["ErrorMessage"] =
+                    "Cannot delete this event because it has active bookings.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
             if (@event != null)
             {
                 _context.Events.Remove(@event);
+                await _context.SaveChangesAsync();
             }
-
-            await _context.SaveChangesAsync();
+         
             return RedirectToAction(nameof(Index));
         }
 

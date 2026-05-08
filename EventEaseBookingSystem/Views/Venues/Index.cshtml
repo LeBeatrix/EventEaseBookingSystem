@@ -1,40 +1,112 @@
 ﻿@model IEnumerable<EventEaseBookingSystem.Models.Venue>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Venues";
 }
 
-<h1>Index</h1>
+<!-- PAGE HEADER -->
+<div class="d-flex justify-content-between align-items-center mb-4">
 
-<p>
-    <a asp-action="Create" class="btn btn-success mb-3">Add New Venue</a>
-</p>
+    <div>
+        <h1 class="fw-bold">Venues</h1>
+        <p class="text-muted">
+            Manage all event venues in the system
+        </p>
+    </div>
 
+    <form asp-action="Index" method="get" class="mb-4">
+
+    <div class="input-group">
+
+        <input type="text"
+               name="searchString"
+               class="form-control"
+               placeholder="Search by venue or location..." />
+
+        <button type="submit" class="btn btn-dark">
+            Search
+        </button>
+
+    </div>
+
+</form>
+
+    <a asp-action="Create" class="btn btn-success">
+        + Add New Venue
+    </a>
+
+</div>
+
+<!-- ERROR MESSAGE -->
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger shadow-sm">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<!-- VENUE CARDS -->
 <div class="row">
 
     @foreach (var item in Model)
     {
-        <div class="col-md-4 mb-4">
-            <div class="card venue-card h-100">
+        <div class="col-lg-4 col-md-6 mb-4">
 
-                <img src="@item.ImageUrl" class="card-img-top venue-img" />
+            <div class="card venue-card border-0 shadow-sm h-100">
 
+                <!-- IMAGE -->
+                <img src="@item.ImageUrl"
+                     class="card-img-top venue-img"
+                     alt="@item.VenueName" />
+
+                <!-- BODY -->
                 <div class="card-body">
-                    <h5 class="card-title">@item.VenueName</h5>
 
-                    <p class="card-text">
-                        <strong>Location:</strong> @item.Location <br />
-                        <strong>Capacity:</strong> @item.Capacity
-                    </p>
+                    <h4 class="card-title fw-bold mb-3">
+                        @item.VenueName
+                    </h4>
+
+                    <div class="venue-info">
+
+                        <p class="mb-2">
+                            <strong>Location:</strong>
+                            @item.Location
+                        </p>
+
+                        <p class="mb-0">
+                            <strong>Capacity:</strong>
+                            @item.Capacity Guests
+                        </p>
+
+                    </div>
+
                 </div>
 
-                <div class="card-footer bg-white border-0 text-center">
-                    <a asp-action="Details" asp-route-id="@item.VenueId" class="btn btn-primary btn-sm">Details</a>
-                    <a asp-action="Edit" asp-route-id="@item.VenueId" class="btn btn-warning btn-sm">Edit</a>
-                    <a asp-action="Delete" asp-route-id="@item.VenueId" class="btn btn-danger btn-sm">Delete</a>
+                <!-- FOOTER -->
+                <div class="card-footer bg-white border-0 text-center pb-4">
+
+                    <a asp-action="Details"
+                       asp-route-id="@item.VenueId"
+                       class="btn btn-primary btn-sm px-3">
+                        Details
+                    </a>
+
+                    <a asp-action="Edit"
+                       asp-route-id="@item.VenueId"
+                       class="btn btn-warning btn-sm px-3">
+                        Edit
+                    </a>
+
+                    <a asp-action="Delete"
+                       asp-route-id="@item.VenueId"
+                       class="btn btn-danger btn-sm px-3">
+                        Delete
+                    </a>
+
                 </div>
 
             </div>
+
         </div>
     }
 
@@ -42,21 +114,37 @@
 
 <style>
 
-    .venue-card {
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
-        border-radius: 10px;
+    body {
+        background-color: #f8f9fa;
     }
 
-        .venue-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-        }
+    .venue-card {
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.25s ease;
+    }
+
+    .venue-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    }
 
     .venue-img {
-        height: 220px;
+        height: 240px;
         object-fit: cover;
-        border-top-left-radius: 10px;
-        border-top-right-radius: 10px;
+    }
+
+    .card-title {
+        color: #212529;
+    }
+
+    .venue-info {
+        font-size: 0.95rem;
+        color: #555;
+    }
+
+    .btn {
+        border-radius: 8px;
     }
 
 </style>

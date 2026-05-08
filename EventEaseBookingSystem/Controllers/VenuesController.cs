@@ -7,22 +7,35 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using EventEaseBookingSystem.Data;
 using EventEaseBookingSystem.Models;
+using EventEaseBookingSystem.Services;
 
 namespace EventEaseBookingSystem.Controllers
 {
     public class VenuesController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly BlobService _blobService;
 
-        public VenuesController(ApplicationDbContext context)
+        public VenuesController(ApplicationDbContext context, BlobService blobService)
         {
             _context = context;
+            _blobService = blobService;
         }
 
         // GET: Venues
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            return View(await _context.Venues.ToListAsync());
+            var venues = from v in _context.Venues
+                         select v;
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                venues = venues.Where(v =>
+                    v.VenueName.Contains(searchString) ||
+                    v.Location.Contains(searchString));
+            }
+
+            return View(await venues.ToListAsync());
         }
 
         // GET: Venues/Details/5
@@ -51,18 +64,47 @@ namespace EventEaseBookingSystem.Controllers
 
         // POST: Venues/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("VenueId,VenueName,Location,Capacity,ImageUrl")] Venue venue)
+        public async Task<IActionResult> Create(Venue venue, IFormFile imageFile)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(venue);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return View(venue);
             }
-            return View(venue);
+
+            // Validate image file (if provided)
+            if (imageFile != null && imageFile.Length > 0)
+            {
+                var allowedExtensions = new HashSet<string> { ".jpg", ".jpeg", ".png" };
+                var extension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
+
+                if (!allowedExtensions.Contains(extension))
+                {
+                    ModelState.AddModelError("imageFile", "Only JPG and PNG images are allowed.");
+                    return View(venue);
+                }
+
+                try
+                {
+                    venue.ImageUrl = await _blobService.UploadFileAsync(imageFile);
+                }
+                catch (Exception ex)
+                {
+                    ModelState.AddModelError("", "Image upload failed. Please try again.");
+                    return View(venue);
+                }
+            }
+            else
+            {
+                ModelState.AddModelError("imageFile", "Please upload an image.");
+                return View(venue);
+            }
+
+            _context.Add(venue);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
         // GET: Venues/Edit/5
@@ -83,38 +125,85 @@ namespace EventEaseBookingSystem.Controllers
 
         // POST: Venues/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("VenueId,VenueName,Location,Capacity,ImageUrl")] Venue venue)
-        {
-            if (id != venue.VenueId)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
+        public async Task<IActionResult> Edit(
+            int id,
+            [Bind("VenueId,VenueName,Location,Capacity,ImageUrl")] Venue venue,
+            IFormFile imageFile)
                 {
-                    _context.Update(venue);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!VenueExists(venue.VenueId))
+                    if (id != venue.VenueId)
                     {
                         return NotFound();
                     }
+
+                    if (!ModelState.IsValid)
+                    {
+                        return View(venue);
+                    }
+
+                    var existingVenue = await _context.Venues
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(v => v.VenueId == id);
+
+                    if (existingVenue == null)
+                    {
+                        return NotFound();
+                    }
+
+                    // If new image uploaded
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
+                        var allowedExtensions = new HashSet<string>
+                {
+                    ".jpg",
+                    ".jpeg",
+                    ".png"
+                };
+
+                        var extension = Path.GetExtension(imageFile.FileName)
+                            .ToLowerInvariant();
+
+                        if (!allowedExtensions.Contains(extension))
+                        {
+                            ModelState.AddModelError("imageFile",
+                                "Only JPG and PNG images are allowed.");
+
+                            return View(venue);
+                        }
+
+                        // Delete old image from Blob Storage
+                        if (!string.IsNullOrEmpty(existingVenue.ImageUrl))
+                        {
+                            await _blobService.DeleteFileAsync(existingVenue.ImageUrl);
+                        }
+
+                        // Upload new image
+                        venue.ImageUrl = await _blobService.UploadFileAsync(imageFile);
+                    }
                     else
                     {
+                        // Keep existing image
+                        venue.ImageUrl = existingVenue.ImageUrl;
+                    }
+
+                    try
+                    {
+                        _context.Update(venue);
+                        await _context.SaveChangesAsync();
+                    }
+                    catch (DbUpdateConcurrencyException)
+                    {
+                        if (!VenueExists(venue.VenueId))
+                        {
+                            return NotFound();
+                        }
+
                         throw;
                     }
+
+                    return RedirectToAction(nameof(Index));
                 }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(venue);
-        }
 
         // GET: Venues/Delete/5
         public async Task<IActionResult> Delete(int? id)
@@ -140,12 +229,31 @@ namespace EventEaseBookingSystem.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var venue = await _context.Venues.FindAsync(id);
-            if (venue != null)
+
+            // CHECK IF EVENT HAS BOOKINGS
+            bool hasBookings = await _context.Bookings
+                .AnyAsync(b => b.EventId == id);
+
+            if (hasBookings)
             {
-                _context.Venues.Remove(venue);
+                TempData["ErrorMessage"] =
+                    "Cannot delete this event because it has active bookings.";
+
+                return RedirectToAction(nameof(Index));
             }
 
-            await _context.SaveChangesAsync();
+            if (venue != null)
+            {
+                //Delete image from blob storage
+                if (!string.IsNullOrEmpty(venue.ImageUrl))
+                {
+                    await _blobService.DeleteFileAsync(venue.ImageUrl);
+                }
+
+                _context.Venues.Remove(venue);
+                await _context.SaveChangesAsync();
+            }
+
             return RedirectToAction(nameof(Index));
         }
 

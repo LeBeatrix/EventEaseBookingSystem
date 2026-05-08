@@ -1,66 +1,127 @@
 ﻿@model IEnumerable<EventEaseBookingSystem.Models.Event>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Events";
 }
 
-<h1>Index</h1>
+<!-- PAGE HEADER -->
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
 
-<p>
-    <a asp-action="Create" class="btn btn-success mb-3">Create New Event</a>
-</p>
-<table>
-    section and replace it with:
-
-    <div class="row">
-
-        @foreach (var item in Model)
-        {
-            <div class="col-md-4 mb-4">
-                <div class="card venue-card h-100">
-
-                    <div class="card-body">
-
-                        <h5 class="card-title">@item.EventName</h5>
-
-                        <p class="card-text">
-                            <strong>Date:</strong> @item.EventDate.ToShortDateString() <br />
-                            <strong>Venue:</strong> @item.Venue?.VenueName
-                        </p>
-
-                        <p class="card-text">
-                            @item.Description
-                        </p>
-
-                    </div>
-
-                    <div class="card-footer bg-white border-0 text-center">
-                        <a asp-action="Details" asp-route-id="@item.EventId" class="btn btn-primary btn-sm">Details</a>
-                        <a asp-action="Edit" asp-route-id="@item.EventId" class="btn btn-warning btn-sm">Edit</a>
-                        <a asp-action="Delete" asp-route-id="@item.EventId" class="btn btn-danger btn-sm">Delete</a>
-                    </div>
-
-                </div>
-            </div>
-        }
-
+    <div>
+        <h1 class="fw-bold mb-1">Events</h1>
+        <p class="text-muted mb-0">
+            Manage all scheduled events
+        </p>
     </div>
 
-    <style>
+    <!-- SEARCH -->
+    <form asp-action="Index" method="get" class="flex-grow-1 mx-3" style="max-width: 400px;">
+        <div class="input-group">
+            <input type="text"
+                   name="searchString"
+                   class="form-control"
+                   placeholder="Search events..." />
 
-        .venue-card {
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-            border-radius: 10px;
-        }
+            <button type="submit" class="btn btn-dark">
+                Search
+            </button>
+        </div>
+    </form>
 
-            .venue-card:hover {
-                transform: translateY(-6px);
-                box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-            }
+    <!-- CREATE BUTTON -->
+    <a asp-action="Create" class="btn btn-success">
+        + Create Event
+    </a>
 
-        .venue-img {
-            height: 220px;
-            object-fit: cover;
-        }
+</div>
 
-    </style>
+<!-- ERROR MESSAGE -->
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger shadow-sm">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<!-- EVENT CARDS -->
+<div class="row">
+
+    @foreach (var item in Model)
+    {
+        <div class="col-lg-4 col-md-6 mb-4">
+
+            <div class="card event-card border-0 shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <h4 class="card-title fw-bold mb-3">
+                        @item.EventName
+                    </h4>
+
+                    <p class="mb-2">
+                        <strong>Date:</strong>
+                        @item.EventDate.ToShortDateString()
+                    </p>
+
+                    <p class="mb-2">
+                        <strong>Venue:</strong>
+                        @item.Venue?.VenueName
+                    </p>
+
+                    <p class="text-muted mb-0">
+                        @item.Description
+                    </p>
+
+                </div>
+
+                <div class="card-footer bg-white border-0 text-center pb-3">
+
+                    <a asp-action="Details"
+                       asp-route-id="@item.EventId"
+                       class="btn btn-primary btn-sm px-3">
+                        Details
+                    </a>
+
+                    <a asp-action="Edit"
+                       asp-route-id="@item.EventId"
+                       class="btn btn-warning btn-sm px-3">
+                        Edit
+                    </a>
+
+                    <a asp-action="Delete"
+                       asp-route-id="@item.EventId"
+                       class="btn btn-danger btn-sm px-3">
+                        Delete
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+</div>
+
+<!-- STYLES -->
+<style>
+
+    body {
+        background-color: #f8f9fa;
+    }
+
+    .event-card {
+        border-radius: 16px;
+        transition: all 0.25s ease;
+    }
+
+    .event-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    }
+
+    .card-title {
+        color: #212529;
+    }
+
+</style>

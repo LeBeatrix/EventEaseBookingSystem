@@ -20,10 +20,20 @@ namespace EventEaseBookingSystem.Controllers
         }
 
         // GET: Bookings
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString)
         {
-            var applicationDbContext = _context.Bookings.Include(b => b.Event).Include(b => b.Venue);
-            return View(await applicationDbContext.ToListAsync());
+            var bookings = _context.Bookings
+                .Include(b => b.Event)
+                .Include(b => b.Venue)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(searchString))
+            {
+                bookings = bookings.Where(b =>
+            b.BookingId.ToString().Contains(searchString) ||
+            b.Event.EventName.Contains(searchString));
+            }
+            return View(await bookings.ToListAsync());
         }
 
         // GET: Bookings/Details/5
@@ -56,11 +66,21 @@ namespace EventEaseBookingSystem.Controllers
 
         // POST: Bookings/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("BookingId,EventId,VenueId,BookingDate")] Booking booking)
         {
+            //CHECK FOR DOUBLE BOOKINGS
+            bool bookingExists = await _context.Bookings
+                .AnyAsync(b =>
+                    b.VenueId == booking.VenueId &&
+                    b.BookingDate.Date == booking.BookingDate.Date);
+
+            if(bookingExists)
+            {
+                ModelState.AddModelError("", "This venue is already booked for the selected date.");
+            }
+            
             if (ModelState.IsValid)
             {
                 _context.Add(booking);
@@ -69,6 +89,8 @@ namespace EventEaseBookingSystem.Controllers
             }
             ViewData["EventId"] = new SelectList(_context.Events, "EventId", "EventName", booking.EventId);
             ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName", booking.VenueId);
+
+            // If validation fails, return user to form
             return View(booking);
         }
 
@@ -166,5 +188,7 @@ namespace EventEaseBookingSystem.Controllers
         {
             return _context.Bookings.Any(e => e.BookingId == id);
         }
+
+
     }
 }
