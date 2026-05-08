@@ -157,6 +157,7 @@ The application is deployed using:
 - GitHub Actions CI/CD
 ---
 ### Live Web Application
+https://st10496124.azurewebsites.net/
 
 ---
 ## CI/CD Deployment
