@@ -68,12 +68,6 @@ namespace EventEaseBookingSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Venue venue, IFormFile imageFile)
         {
-            if (!ModelState.IsValid)
-            {
-                return View(venue);
-            }
-
-            // Validate image file (if provided)
             if (imageFile != null && imageFile.Length > 0)
             {
                 var allowedExtensions = new HashSet<string> { ".jpg", ".jpeg", ".png" };
@@ -82,22 +76,25 @@ namespace EventEaseBookingSystem.Controllers
                 if (!allowedExtensions.Contains(extension))
                 {
                     ModelState.AddModelError("imageFile", "Only JPG and PNG images are allowed.");
-                    return View(venue);
-                }
-
-                try
-                {
-                    venue.ImageUrl = await _blobService.UploadFileAsync(imageFile);
-                }
-                catch (Exception ex)
-                {
-                    ModelState.AddModelError("", "Image upload failed. Please try again.");
-                    return View(venue);
                 }
             }
             else
             {
                 ModelState.AddModelError("imageFile", "Please upload an image.");
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(venue);
+            }
+
+            try
+            {
+                venue.ImageUrl = await _blobService.UploadFileAsync(imageFile!);
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError("", "Image upload failed. Please try again.");
                 return View(venue);
             }
 
@@ -137,11 +134,6 @@ namespace EventEaseBookingSystem.Controllers
                         return NotFound();
                     }
 
-                    if (!ModelState.IsValid)
-                    {
-                        return View(venue);
-                    }
-
                     var existingVenue = await _context.Venues
                         .AsNoTracking()
                         .FirstOrDefaultAsync(v => v.VenueId == id);
@@ -168,10 +160,17 @@ namespace EventEaseBookingSystem.Controllers
                         {
                             ModelState.AddModelError("imageFile",
                                 "Only JPG and PNG images are allowed.");
-
-                            return View(venue);
                         }
+                    }
 
+                    if (!ModelState.IsValid)
+                    {
+                        venue.ImageUrl = existingVenue.ImageUrl;
+                        return View(venue);
+                    }
+
+                    if (imageFile != null && imageFile.Length > 0)
+                    {
                         // Delete old image from Blob Storage
                         if (!string.IsNullOrEmpty(existingVenue.ImageUrl))
                         {

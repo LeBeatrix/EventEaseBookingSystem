@@ -16,8 +16,7 @@ namespace EventEaseBookingSystem.Models
 
         public int Capacity { get; set; }
 
-        [Required(ErrorMessage = "Image URL is required")]
-        public string ImageUrl { get; set; }
+        public string? ImageUrl { get; set; }
 
         // Navigation collections
         public ICollection<Event> Events { get; set; } = new List<Event>();
