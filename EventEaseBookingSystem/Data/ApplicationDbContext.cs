@@ -15,10 +15,19 @@ namespace EventEaseBookingSystem.Data
         public DbSet<Event> Events { get; set; }
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<BookingDetailsViewModel> BookingDetailsView { get; set; }
+        public DbSet<EventType> EventTypes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<EventType>().HasData(
+                new EventType { EventTypeId = 1, TypeName = "Conference" },
+                new EventType { EventTypeId = 2, TypeName = "Wedding" },
+                new EventType { EventTypeId = 3, TypeName = "Concert" },
+                new EventType { EventTypeId = 4, TypeName = "Workshop" },
+                new EventType { EventTypeId = 5, TypeName = "Corporate Event" }
+            );
 
             // Booking -> Event
             modelBuilder.Entity<Booking>()

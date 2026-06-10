@@ -18,6 +18,8 @@ namespace EventEaseBookingSystem.Models
 
         public string? ImageUrl { get; set; }
 
+        public bool IsAvailable { get; set; } = true;
+
         // Navigation collections
         public ICollection<Event> Events { get; set; } = new List<Event>();
         public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
