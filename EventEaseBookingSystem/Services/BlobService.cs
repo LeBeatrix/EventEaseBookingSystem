@@ -12,6 +12,16 @@ namespace EventEaseBookingSystem.Services
         {
             _connectionString = configuration["AzureBlobStorage:ConnectionString"];
             _containerName = configuration["AzureBlobStorage:ContainerName"];
+
+            if (string.IsNullOrEmpty(_connectionString))
+            {
+                throw new Exception("Azure Blob Storage Connection String is missing.");
+            }
+
+            if (string.IsNullOrEmpty(_containerName))
+            {
+                throw new Exception("Azure Blob Storage Container Name is missing.");
+            }
         }
 
         public async Task<string> UploadFileAsync(IFormFile file)

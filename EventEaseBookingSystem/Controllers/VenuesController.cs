@@ -111,11 +111,9 @@ namespace EventEaseBookingSystem.Controllers
                 venue.ImageUrl =
                     await _blobService.UploadFileAsync(imageFile);
             }
-            catch
+            catch (Exception ex)
             {
-                ModelState.AddModelError("",
-                    "Image upload failed. Please try again.");
-
+                ModelState.AddModelError("", ex.ToString());
                 return View(venue);
             }
 
