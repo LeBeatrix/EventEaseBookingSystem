@@ -14,28 +14,42 @@
         </p>
     </div>
 
-    <form asp-action="Index" method="get" class="mb-4">
-
-    <div class="input-group">
-
-        <input type="text"
-               name="searchString"
-               class="form-control"
-               placeholder="Search by venue or location..." />
-
-        <button type="submit" class="btn btn-dark">
-            Search
-        </button>
-
-    </div>
-
-</form>
-
     <a asp-action="Create" class="btn btn-success">
         + Add New Venue
     </a>
 
 </div>
+
+<!-- FILTERS -->
+<form asp-action="Index" method="get" class="mb-4">
+
+    <div class="row g-2">
+
+        <div class="col-md-6">
+            <input type="text"
+                   name="searchString"
+                   class="form-control"
+                   placeholder="Search by venue or location..." />
+        </div>
+
+        <div class="col-md-3">
+            <select name="availableOnly" class="form-control">
+                <option value="">All Venues</option>
+                <option value="true">Available Only</option>
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <button type="submit"
+                    class="btn btn-dark w-100">
+                Filter
+            </button>
+        </div>
+
+    </div>
+
+</form>
+
 
 <!-- ERROR MESSAGE -->
 @if (TempData["ErrorMessage"] != null)
@@ -55,9 +69,18 @@
             <div class="card venue-card border-0 shadow-sm h-100">
 
                 <!-- IMAGE -->
-                <img src="@item.ImageUrl"
-                     class="card-img-top venue-img"
-                     alt="@item.VenueName" />
+                @if (!string.IsNullOrEmpty(item.ImageUrl))
+{
+    <img src="@item.ImageUrl"
+         class="card-img-top venue-img"
+         alt="@item.VenueName" />
+}
+else
+{
+    <img src="/images/no-image.png"
+         class="card-img-top venue-img"
+         alt="No Image Available" />
+}
 
                 <!-- BODY -->
                 <div class="card-body">
@@ -78,6 +101,22 @@
                             @item.Capacity Guests
                         </p>
 
+                        <p class="mb-0">
+    <strong>Status:</strong>
+
+    @if (item.IsAvailable)
+    {
+        <span class="badge bg-success">
+            Available
+        </span>
+    }
+    else
+    {
+        <span class="badge bg-danger">
+            Unavailable
+        </span>
+    }
+</p>
                     </div>
 
                 </div>

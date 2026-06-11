@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using EventEaseBookingSystem.Data;
 using EventEaseBookingSystem.Models;
 using EventEaseBookingSystem.Services;
+using Microsoft.AspNetCore.Http;
 
 namespace EventEaseBookingSystem.Controllers
 {
@@ -23,16 +24,22 @@ namespace EventEaseBookingSystem.Controllers
         }
 
         // GET: Venues
-        public async Task<IActionResult> Index(string searchString)
+        public async Task<IActionResult> Index(
+    string searchString,
+    bool? availableOnly)
         {
-            var venues = from v in _context.Venues
-                         select v;
+            var venues = _context.Venues.AsQueryable();
 
             if (!string.IsNullOrEmpty(searchString))
             {
                 venues = venues.Where(v =>
                     v.VenueName.Contains(searchString) ||
                     v.Location.Contains(searchString));
+            }
+
+            if (availableOnly == true)
+            {
+                venues = venues.Where(v => v.IsAvailable);
             }
 
             return View(await venues.ToListAsync());
@@ -66,21 +73,32 @@ namespace EventEaseBookingSystem.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Venue venue, IFormFile imageFile)
+        public async Task<IActionResult> Create(
+            [Bind("VenueId,VenueName,Location,Capacity,ImageUrl,IsAvailable")] Venue venue,
+            IFormFile imageFile)
         {
             if (imageFile != null && imageFile.Length > 0)
             {
-                var allowedExtensions = new HashSet<string> { ".jpg", ".jpeg", ".png" };
-                var extension = Path.GetExtension(imageFile.FileName).ToLowerInvariant();
+                var allowedExtensions = new HashSet<string>
+        {
+            ".jpg",
+            ".jpeg",
+            ".png"
+        };
+
+                var extension = Path.GetExtension(imageFile.FileName)
+                    .ToLowerInvariant();
 
                 if (!allowedExtensions.Contains(extension))
                 {
-                    ModelState.AddModelError("imageFile", "Only JPG and PNG images are allowed.");
+                    ModelState.AddModelError("imageFile",
+                        "Only JPG and PNG images are allowed.");
                 }
             }
             else
             {
-                ModelState.AddModelError("imageFile", "Please upload an image.");
+                ModelState.AddModelError("imageFile",
+                    "Please upload an image.");
             }
 
             if (!ModelState.IsValid)
@@ -90,11 +108,14 @@ namespace EventEaseBookingSystem.Controllers
 
             try
             {
-                venue.ImageUrl = await _blobService.UploadFileAsync(imageFile!);
+                venue.ImageUrl =
+                    await _blobService.UploadFileAsync(imageFile);
             }
-            catch (Exception)
+            catch
             {
-                ModelState.AddModelError("", "Image upload failed. Please try again.");
+                ModelState.AddModelError("",
+                    "Image upload failed. Please try again.");
+
                 return View(venue);
             }
 
@@ -126,7 +147,7 @@ namespace EventEaseBookingSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
             int id,
-            [Bind("VenueId,VenueName,Location,Capacity,ImageUrl")] Venue venue,
+            [Bind("VenueId,VenueName,Location,Capacity,ImageUrl,IsAvailable")] Venue venue,
             IFormFile imageFile)
                 {
                     if (id != venue.VenueId)
@@ -229,14 +250,14 @@ namespace EventEaseBookingSystem.Controllers
         {
             var venue = await _context.Venues.FindAsync(id);
 
-            // CHECK IF EVENT HAS BOOKINGS
+            // CHECK IF VENUE HAS BOOKINGS
             bool hasBookings = await _context.Bookings
-                .AnyAsync(b => b.EventId == id);
+                .AnyAsync(b => b.VenueId == id);
 
             if (hasBookings)
             {
                 TempData["ErrorMessage"] =
-                    "Cannot delete this event because it has active bookings.";
+                    "Cannot delete this venue because it has active bookings.";
 
                 return RedirectToAction(nameof(Index));
             }
