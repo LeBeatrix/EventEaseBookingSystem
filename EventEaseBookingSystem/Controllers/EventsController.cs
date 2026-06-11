@@ -109,7 +109,7 @@ namespace EventEaseBookingSystem.Controllers
                 new SelectList(_context.Venues, "VenueId", "VenueName", @event.VenueId);
 
             ViewData["EventTypeId"] =
-                new SelectList(_context.EventTypes, "EventTypeId", "TypeName", @event.EventTypeId); "VenueName", @event.VenueId);
+                new SelectList(_context.EventTypes, "EventTypeId", "TypeName", @event.EventTypeId);
             return View(@event);
         }
 
@@ -118,7 +118,7 @@ namespace EventEaseBookingSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Bind("EventId,EventName,EventDate,Description,VenueId,EventTypeId")] Event @event)
+        public async Task<IActionResult> Edit(int id, [Bind("EventId,EventName,EventDate,Description,VenueId,EventTypeId")] Event @event)
         {
             if (id != @event.EventId)
             {
