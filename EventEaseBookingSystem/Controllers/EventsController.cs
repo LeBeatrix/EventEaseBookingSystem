@@ -24,13 +24,15 @@ namespace EventEaseBookingSystem.Controllers
         {
             var events = _context.Events
                 .Include(e => e.Venue)
+                .Include(e => e.EventType)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(searchString))
             {
                 events = events.Where(e =>
                     e.EventName.Contains(searchString) ||
-                    e.Venue.VenueName.Contains(searchString));
+                    e.Venue!.VenueName.Contains(searchString) ||
+                    e.EventType!.TypeName.Contains(searchString));
             }
 
             return View(await events.ToListAsync());
@@ -46,6 +48,7 @@ namespace EventEaseBookingSystem.Controllers
 
             var @event = await _context.Events
                 .Include(e => e.Venue)
+                .Include(e => e.EventType)
                 .FirstOrDefaultAsync(m => m.EventId == id);
             if (@event == null)
             {
@@ -58,7 +61,12 @@ namespace EventEaseBookingSystem.Controllers
         // GET: Events/Create
         public IActionResult Create()
         {
-            ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName");
+            ViewData["VenueId"] =
+                new SelectList(_context.Venues, "VenueId", "VenueName");
+
+            ViewData["EventTypeId"] =
+                new SelectList(_context.EventTypes, "EventTypeId", "TypeName");
+
             return View();
         }
 
@@ -67,7 +75,7 @@ namespace EventEaseBookingSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("EventId,EventName,EventDate,Description,VenueId")] Event @event)
+        public async Task<IActionResult> Create([Bind("EventId,EventName,EventDate,Description,VenueId,EventTypeId")] Event @event)
         {
             if (ModelState.IsValid)
             {
@@ -75,9 +83,12 @@ namespace EventEaseBookingSystem.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName", @event.VenueId);
+            ViewData["VenueId"] =
+                new SelectList(_context.Venues, "VenueId", "VenueName", @event.VenueId);
 
-            // If validation fails, return user to form
+            ViewData["EventTypeId"] =
+                new SelectList(_context.EventTypes, "EventTypeId", "TypeName", @event.EventTypeId);
+
             return View(@event);
         }
 
@@ -94,7 +105,11 @@ namespace EventEaseBookingSystem.Controllers
             {
                 return NotFound();
             }
-            ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName", @event.VenueId);
+            ViewData["VenueId"] =
+                new SelectList(_context.Venues, "VenueId", "VenueName", @event.VenueId);
+
+            ViewData["EventTypeId"] =
+                new SelectList(_context.EventTypes, "EventTypeId", "TypeName", @event.EventTypeId); "VenueName", @event.VenueId);
             return View(@event);
         }
 
@@ -103,7 +118,7 @@ namespace EventEaseBookingSystem.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("EventId,EventName,EventDate,Description,VenueId")] Event @event)
+        public async Task<IActionResult> Edit(int id, Bind("EventId,EventName,EventDate,Description,VenueId,EventTypeId")] Event @event)
         {
             if (id != @event.EventId)
             {
@@ -130,8 +145,13 @@ namespace EventEaseBookingSystem.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["VenueId"] = new SelectList(_context.Venues, "VenueId", "VenueName", @event.VenueId);
-            return View(@event);
+            ViewData["VenueId"] =
+                new SelectList(_context.Venues, "VenueId", "VenueName", @event.VenueId);
+
+            ViewData["EventTypeId"] =
+                 new SelectList(_context.EventTypes, "EventTypeId", "TypeName", @event.EventTypeId);
+
+             return View(@event);
         }
 
         // GET: Events/Delete/5
@@ -142,10 +162,11 @@ namespace EventEaseBookingSystem.Controllers
                 return NotFound();
             }
 
-            var @event = await _context.Events
-                .Include(e => e.Venue)
-                .FirstOrDefaultAsync(m => m.EventId == id);
-            if (@event == null)
+        var @event = await _context.Events
+            .Include(e => e.Venue)
+            .Include(e => e.EventType)
+            .FirstOrDefaultAsync(m => m.EventId == id);
+        if (@event == null)
             {
                 return NotFound();
             }

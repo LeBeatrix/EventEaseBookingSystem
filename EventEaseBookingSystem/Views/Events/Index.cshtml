@@ -58,6 +58,11 @@
                         @item.EventName
                     </h4>
 
+                    <p>
+                        <strong>Event Type:</strong>
+                        @item.EventType?.TypeName
+                    </p>
+
                     <p class="mb-2">
                         <strong>Date:</strong>
                         @item.EventDate.ToShortDateString()

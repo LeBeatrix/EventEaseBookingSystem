@@ -7,26 +7,58 @@
 <h1 class="mb-4">Booking Management</h1>
 
 <!-- SEARCH -->
+<!-- FILTERS -->
 <form method="get" asp-action="Index" class="mb-4">
 
-    <div class="row">
+    <div class="row g-2">
 
-        <div class="col-md-6">
+        <div class="col-md-3">
             <input type="text"
                    name="searchString"
                    class="form-control"
-                   placeholder="Search by Booking ID or Event Name..." />
+                   placeholder="Search Booking ID or Event Name..." />
         </div>
 
         <div class="col-md-2">
+            <select name="eventTypeId"
+                    class="form-control"
+                    asp-items="ViewBag.EventTypeId">
+                <option value="">All Event Types</option>
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <input type="date"
+                   name="startDate"
+                   class="form-control" />
+        </div>
+
+        <div class="col-md-2">
+            <input type="date"
+                   name="endDate"
+                   class="form-control" />
+        </div>
+
+        <div class="col-md-1 d-flex align-items-center">
+            <input type="checkbox"
+                   name="availableOnly"
+                   value="true"
+                   class="form-check-input me-2" />
+            <label class="form-check-label">
+                Available
+            </label>
+        </div>
+
+        <div class="col-md-1">
             <button type="submit" class="btn btn-dark w-100">
-                Search
+                Filter
             </button>
         </div>
 
-        <div class="col-md-4 text-end">
-            <a asp-action="Create" class="btn btn-success">
-                Create New Booking
+        <div class="col-md-1">
+            <a asp-action="Create"
+               class="btn btn-success w-100">
+                +
             </a>
         </div>
 
@@ -41,6 +73,8 @@
         <div class="col-md-6 mb-4">
 
             <div class="card shadow-sm h-100 booking-card">
+                <p><strong>Event Type:</strong> @item.Event?.EventType?.TypeName</p>
+                <p><strong>Venue Available:</strong> @(item.Venue?.IsAvailable == true ? "Yes" : "No")</p>
 
                 <div class="card-header bg-dark text-white">
                     <h5 class="mb-0">
