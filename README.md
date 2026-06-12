@@ -1,190 +1,249 @@
 # EventEase Booking System
 
-The EventEase Booking System is a cloud-based web application developed using ASP.NET Core MVC and Entity Framework Core. The system allows booking specialists to manage venues, events, and bookings through a modern web interface integrated with Microsoft Azure cloud services.
+## Overview
 
-The application was developed as part of an Advanced Diploma in Application Development project and demonstrates practical implementation of cloud computing, database management, validation, and secure file storage.
+The EventEase Booking System is a cloud-based web application developed using ASP.NET Core MVC and Entity Framework Core. The system enables booking specialists to manage venues, events, and bookings through an intuitive web interface integrated with Microsoft Azure cloud services.
 
----
-## Project Overview
-
-The system allows administrators and booking specialists to:
-
-- Manage venues
-- Create and manage events
-- Create bookings linking events and venues
-- Upload and manage venue images using Azure Blob Storage
-- Search bookings, events, and venues
-- Prevent double bookings
-- Restrict deletion of venues and events associated with active bookings
-
-The application uses ASP.NET Core MVC together with Entity Framework Core and SQL Server hosted on Azure.
+This project was developed as part of the Advanced Diploma in Application Development and demonstrates practical implementation of cloud computing, database management, validation, secure file storage, and continuous deployment using Microsoft Azure.
 
 ---
+
+## Project Objectives
+
+The system was designed to:
+
+* Manage venues, events, and bookings
+* Store venue images using Azure Blob Storage
+* Prevent double bookings
+* Restrict deletion of records linked to active bookings
+* Provide search and filtering capabilities
+* Demonstrate cloud deployment using Azure services
+* Implement automated deployment through GitHub Actions
+
+---
+
 ## Technologies Used
 
-- ASP.NET Core MVC (.NET 8)
-- C#
-- Entity Framework Core
-- SQL Server
-- Azure SQL Database
-- Azure Blob Storage
-- Azure App Service
-- GitHub Actions
-- Bootstrap 5
-- Visual Studio / VS Code
+* ASP.NET Core MVC (.NET 8)
+* C#
+* Entity Framework Core
+* SQL Server
+* Azure SQL Database
+* Azure Blob Storage
+* Azure App Service
+* GitHub Actions
+* Bootstrap 5
+* Visual Studio 2022
+* Visual Studio Code
 
 ---
-## Features
+
+## System Features
 
 ### Venue Management
-- Create, edit, and delete venues
-- Upload venue images to Azure Blob Storage
-- Venue search functionality
-- Validation for required fields
+
+* Create, edit, and delete venues
+* Upload venue images to Azure Blob Storage
+* Search venues by venue name or location
+* Venue availability tracking
+* Image replacement during editing
+* Validation for required fields and image uploads
 
 ### Event Management
-- Create, edit, and delete events
-- Link events to venues
-- Event search functionality
-- Restrict deletion when bookings exist
+
+* Create, edit, and delete events
+* Associate events with venues
+* Search events by event name or venue
+* Restrict deletion when bookings exist
 
 ### Booking Management
-- Create bookings linking events and venues
-- Prevent double bookings for the same venue and date
-- Consolidated booking summary display
-- Search bookings by Booking ID or Event Name
+
+* Create bookings linking venues and events
+* Search bookings by Booking ID or Event Name
+* Prevent double bookings for the same venue and date
+* Consolidated booking information display
+* Validation to ensure data integrity
 
 ### Cloud Integration
-- Azure SQL Database integration
-- Azure Blob Storage image management
-- Azure App Service deployment
-- GitHub Actions CI/CD deployment pipeline
+
+* Azure SQL Database for persistent data storage
+* Azure Blob Storage for venue image management
+* Azure App Service hosting
+* GitHub Actions CI/CD deployment pipeline
 
 ---
+
 ## Database Structure
-The system contains three primary entities.
 
-## Venue
+### Venue Entity
 
-| Field | Description |
-|---|---|
-| VenueId | Primary Key |
-| VenueName | Venue name |
-| Location | Venue location |
-| Capacity | Maximum venue capacity |
-| ImageUrl | Azure Blob Storage image URL |
+| Field       | Description                  |
+| ----------- | ---------------------------- |
+| VenueId     | Primary Key                  |
+| VenueName   | Venue name                   |
+| Location    | Venue location               |
+| Capacity    | Maximum venue capacity       |
+| ImageUrl    | Azure Blob Storage image URL |
+| IsAvailable | Venue availability status    |
 
----
+### Event Entity
 
-## Event
+| Field       | Description          |
+| ----------- | -------------------- |
+| EventId     | Primary Key          |
+| EventName   | Event name           |
+| Description | Event description    |
+| EventDate   | Date of event        |
+| VenueId     | Foreign Key to Venue |
 
-| Field | Description |
-|---|---|
-| EventId | Primary Key |
-| EventName | Event name |
-| Description | Event description |
-| EventDate | Date of event |
-| VenueId | Foreign Key to Venue |
+### Booking Entity
 
----
-
-## Booking
-
-| Field | Description |
-|---|---|
-| BookingId | Primary Key |
-| EventId | Foreign Key to Event |
-| VenueId | Foreign Key to Venue |
-| BookingDate | Booking date |
+| Field       | Description          |
+| ----------- | -------------------- |
+| BookingId   | Primary Key          |
+| EventId     | Foreign Key to Event |
+| VenueId     | Foreign Key to Venue |
+| BookingDate | Booking date         |
 
 ---
+
 ## Azure Blob Storage Integration
 
-Venue images are uploaded directly to Azure Blob Storage instead of storing placeholder URLs.
+Venue images are stored in Azure Blob Storage instead of being saved locally.
 
-Features include:
+### Features
 
-- Secure image upload
-- Blob image retrieval
-- Image replacement during editing
-- Blob deletion when venue records are deleted
-- File type validation
+* Secure cloud image storage
+* Automatic image upload
+* Image retrieval through stored URLs
+* Image replacement during venue editing
+* Automatic image deletion when venue records are removed
+* File type validation for image uploads
+
 ---
-# Search Functionality
 
-Search functionality was added across the system:
+## Search Functionality
 
-| Module | Search Criteria |
-|---|---|
-| Venues | Venue name, location |
-| Events | Event name, venue |
+Search functionality is available throughout the system.
+
+| Module   | Search Criteria        |
+| -------- | ---------------------- |
+| Venues   | Venue name, location   |
+| Events   | Event name, venue      |
 | Bookings | Booking ID, event name |
 
 ---
-## Running the Project Locally
-### Prerequisites
-- Visual Studio 2022 or VS Code
-- .NET 8 SDK
-- SQL Server LocalDB
-- Azure Storage Account (optional for image upload)
+
+## Business Rules and Validation
+
+### Venue Validation
+
+* Venue name is required
+* Location is required
+* Capacity must be greater than zero
+* Only JPG and PNG images are accepted
+
+### Booking Validation
+
+* Prevents double bookings for the same venue and date
+* Ensures venue availability before booking
+* Validates required booking information
+
+### Delete Restrictions
+
+* Venues linked to active bookings cannot be deleted
+* Events linked to active bookings cannot be deleted
+
 ---
-### Steps
-1. Clone the repository
+
+## Running the Project Locally
+
+### Prerequisites
+
+* Visual Studio 2022 or Visual Studio Code
+* .NET 8 SDK
+* SQL Server LocalDB
+* Azure Storage Account (optional for image uploads)
+
+### Installation Steps
+
+1. Clone the repository:
+
 ```bash
 git clone https://github.com/LeBeatrix/EventEaseBookingSystem.git
 ```
-2. Open the project
-3. Restore packages
+
+2. Navigate to the project directory:
+
+```bash
+cd EventEaseBookingSystem
+```
+
+3. Restore NuGet packages:
+
 ```bash
 dotnet restore
 ```
-4. Apply database migrations
+
+4. Apply database migrations:
+
 ```bash
 dotnet ef database update
 ```
-5. Run the application
+
+5. Run the application:
+
 ```bash
 dotnet run
 ```
+
 ---
+
 ## Azure Deployment
 
-The application is deployed using:
+The application is deployed using Microsoft Azure cloud services:
 
-- Azure App Service
-- Azure SQL Database
-- Azure Blob Storage
-- GitHub Actions CI/CD
----
-### Live Web Application
-https://st10496124.azurewebsites.net/
+* Azure App Service
+* Azure SQL Database
+* Azure Blob Storage
+* GitHub Actions Continuous Deployment
 
----
-## CI/CD Deployment
+### Live Application
 
-GitHub Actions is used to automate:
-
-- Build process
-- Publish process
-- Azure deployment
-
-The workflow automatically deploys the application whenever changes are pushed to the master branch.
+https://st10496124v2.azurewebsites.net/
 
 ---
+
+## Continuous Integration and Deployment (CI/CD)
+
+GitHub Actions automates:
+
+* Source code build
+* Application publishing
+* Azure deployment
+* Continuous integration validation
+
+The deployment workflow automatically publishes updates whenever changes are pushed to the `master` branch.
+
+---
+
 ## Author
 
-Lené Prinsloo  
-Advanced Diploma in Application Development Student
+**Lené Prinsloo**
+ST10496124
+Advanced Diploma in Application Development
 IIE Rosebank College
 
 ---
+
 ## References
 
-- Microsoft Documentation – Entity Framework Core  
-  https://learn.microsoft.com/en-us/ef/core/
+Microsoft. (2025) *Entity Framework Core Documentation*. Available at: https://learn.microsoft.com/en-us/ef/core/ (Accessed: 12 June 2026).
 
-- Microsoft Documentation – ASP.NET Core MVC  
-  https://learn.microsoft.com/en-us/aspnet/core/mvc/
+Microsoft. (2025) *ASP.NET Core MVC Documentation*. Available at: https://learn.microsoft.com/en-us/aspnet/core/mvc/ (Accessed: 12 June 2026).
 
-- Azure Documentation – App Service Deployment  
-  https://learn.microsoft.com/en-us/azure/app-service/
+Microsoft. (2025) *Azure App Service Documentation*. Available at: https://learn.microsoft.com/en-us/azure/app-service/ (Accessed: 12 June 2026).
+
+Microsoft. (2025) *Azure Blob Storage Documentation*. Available at: https://learn.microsoft.com/en-us/azure/storage/blobs/ (Accessed: 12 June 2026).
+
+Microsoft. (2025) *Azure SQL Database Documentation*. Available at: https://learn.microsoft.com/en-us/azure/azure-sql/ (Accessed: 12 June 2026).
